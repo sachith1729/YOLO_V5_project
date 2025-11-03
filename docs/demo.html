@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>YOLO_V5_project — Demo</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#ff6b6b;--text:#e6eef6}
+    body{margin:0;font-family:Inter,Segoe UI,Arial;background:linear-gradient(180deg,#071022 0%, #0f1724 100%);color:var(--text);}
+    .wrap{max-width:980px;margin:40px auto;padding:24px}
+    .card{background:rgba(255,255,255,0.03);border-radius:12px;padding:18px;box-shadow:0 6px 30px rgba(2,6,23,0.6)}
+    h1{margin:4px 0 12px;font-size:20px}
+    .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+    button{background:var(--accent);border:none;padding:8px 12px;border-radius:8px;color:#fff;cursor:pointer}
+    .viewer{position:relative;border-radius:10px;overflow:hidden;margin-top:10px}
+    .viewer img{display:block;width:100%;height:auto}
+    .box{position:absolute;border:3px solid #ffcc00;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,0.5)}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    label{font-size:13px}
+    .muted{color:#9fb0c8;font-size:13px}
+    .small{font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Interactive README Demo — Local Preview</h1>
+      <div class="toolbar">
+        <button id="toggleTheme">Toggle Light/Dark</button>
+        <button id="simulate">Simulate Detection</button>
+        <div class="muted">(This demo runs locally; README on GitHub will not run JS)</div>
+      </div>
+
+      <div class="viewer" id="viewer">
+        <img id="scene" src="../templates/12.jpg" alt="demo scene" />
+      </div>
+
+      <div class="controls small">
+        <label>Boxes: <input id="count" type="range" min="1" max="6" value="3" /></label>
+        <span id="countVal">3</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const viewer = document.getElementById('viewer');
+    const scene = document.getElementById('scene');
+    const simulate = document.getElementById('simulate');
+    const toggleTheme = document.getElementById('toggleTheme');
+    const count = document.getElementById('count');
+    const countVal = document.getElementById('countVal');
+
+    count.addEventListener('input', ()=> countVal.textContent = count.value );
+
+    function rand(min,max){return Math.random()*(max-min)+min}
+
+    function clearBoxes(){document.querySelectorAll('.box').forEach(b=>b.remove())}
+
+    function placeBoxes(n){
+      clearBoxes();
+      const r = viewer.getBoundingClientRect();
+      const iw = viewer.clientWidth;
+      const ih = viewer.clientHeight;
+      for(let i=0;i<n;i++){
+        const w = rand(iw*0.12, iw*0.45);
+        const h = rand(ih*0.08, ih*0.35);
+        const x = rand(0, iw - w);
+        const y = rand(0, ih - h);
+        const el = document.createElement('div');
+        el.className='box';
+        el.style.left = x+'px';
+        el.style.top = y+'px';
+        el.style.width = w+'px';
+        el.style.height = h+'px';
+        viewer.appendChild(el);
+      }
+    }
+
+    simulate.addEventListener('click', ()=>{
+      placeBoxes(parseInt(count.value,10));
+    });
+
+    toggleTheme.addEventListener('click', ()=>{
+      const root = document.documentElement;
+      if(root.style.getPropertyValue('--bg')){
+        // swap to light
+        root.style.setProperty('--bg','#f6f9fc');
+        root.style.setProperty('--card','#ffffff');
+        root.style.setProperty('--text','#0b1220');
+        root.style.setProperty('--accent','#0b84ff');
+        document.body.style.background = 'linear-gradient(180deg,#fff 0%, #e9f2ff 100%)';
+      } else {
+        root.style.setProperty('--bg','#0f1724');
+        root.style.setProperty('--card','#0b1220');
+        root.style.setProperty('--text','#e6eef6');
+        root.style.setProperty('--accent','#ff6b6b');
+        document.body.style.background = 'linear-gradient(180deg,#071022 0%, #0f1724 100%)';
+      }
+    });
+
+    // Resize observer to keep boxes aligned if window resizes
+    new ResizeObserver(()=>{
+      clearBoxes();
+    }).observe(viewer);
+  </script>
+</body>
+</html>
